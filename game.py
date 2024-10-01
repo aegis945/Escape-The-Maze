@@ -1,6 +1,23 @@
 import pygame
 from os import path
 
+class Robot:
+    def __init__(self, scale: int):
+        self.x = 1
+        self.y = 1
+        self.scale = scale
+        self.image = pygame.image.load(path.join('images', 'robot.png'))
+
+    def move(self, dx: int, dy: int, game_map: list):
+        new_x = self.x + dx
+        new_y = self.y + dy
+
+        if game_map[new_y][new_x] != 1:
+            self.x = new_x
+            self.y = new_y
+
+    def draw(self, window: pygame.Surface):
+        window.blit(self.image, (self.x * self.scale, self.y * self.scale))
 class EscapeTheMaze:
     def __init__(self):
         pygame.init()
@@ -18,6 +35,8 @@ class EscapeTheMaze:
         self.game_font = pygame.font.SysFont("Arial", 24)
 
         pygame.display.set_caption("Escape the Maze")
+
+        self.robot = Robot(self.scale)
 
         self.main_loop()
 
@@ -58,6 +77,7 @@ class EscapeTheMaze:
     def draw_window(self):
         self.window.fill((255, 255, 255))
         self.draw_maze()
+        self.robot.draw(self.window)
         pygame.display.flip()
 
     def draw_maze(self):
@@ -68,8 +88,18 @@ class EscapeTheMaze:
 
     def check_events(self):
         for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.robot.move(-1, 0, self.map)
+                if event.key == pygame.K_UP:
+                    self.robot.move(0, -1, self.map)
+                if event.key == pygame.K_RIGHT:
+                    self.robot.move(1, 0, self.map)
+                if event.key == pygame.K_DOWN:
+                    self.robot.move(0, 1, self.map)
+                if event.key == pygame.K_ESCAPE:
+                    exit()
             if event.type == pygame.QUIT:
-                pygame.quit()
                 exit()
         
     def main_loop(self):
