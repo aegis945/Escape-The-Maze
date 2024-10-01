@@ -1,5 +1,6 @@
 import pygame
 from os import path
+from random import sample
 
 class Robot:
     def __init__(self, scale: int):
@@ -74,10 +75,16 @@ class EscapeTheMaze:
                     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
                 ]
         
+        self.create_coins(30)
+        
     def draw_window(self):
         self.window.fill((255, 255, 255))
         self.draw_maze()
         self.robot.draw(self.window)
+
+        for coin in self.coins:
+            coin_x, coin_y = coin
+            self.window.blit(self.images[5], (coin_x * self.scale, coin_y * self.scale))
 
         score_text = self.game_font.render(f'Score: {self.score}', True, (255, 255, 255))
         score_x = self.width * self.scale - score_text.get_width() - 10
@@ -91,6 +98,15 @@ class EscapeTheMaze:
             for x in range(self.width):
                 square = self.map[y][x]
                 self.window.blit(self.images[square], (x * self.scale, y * self.scale))
+
+    def create_coins(self, number_of_coins):
+        self.coins = []
+        for y, row in enumerate(self.map):
+            for x, tile in enumerate(row):
+                if tile == 0 and (x, y) != (1, 1):
+                    self.coins.append((x, y))
+
+        self.coins = sample(self.coins, number_of_coins)
 
     def check_events(self):
         for event in pygame.event.get():
@@ -108,10 +124,14 @@ class EscapeTheMaze:
             if event.type == pygame.QUIT:
                 exit()
 
+        if (self.robot.x, self.robot.y) in self.coins:
+            self.coins.remove((self.robot.x, self.robot.y))
+            self.score += 1
+
     def game_solved(self):
         message = self.game_font.render("You escaped!", True, (0, 255, 0))
         message_rect = message.get_rect(center=(self.width * self.scale // 2, self.height * self.scale // 2))
-        self.window.blit(message, (self.scale, self.height * self.scale))
+
         pygame.draw.rect(self.window, (255, 255, 255), message_rect.inflate(20, 20))
         self.window.blit(message, message_rect)
         
